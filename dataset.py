@@ -16,7 +16,7 @@ import sys## undefined
 import threading## undefined
 from glob import glob## undefined
 
-import cv2## undefined
+import cv2 # it imports the opencv library
 import torch## undefined
 from PIL import Image## undefined
 from torch.utils.data import Dataset, DataLoader## undefined
