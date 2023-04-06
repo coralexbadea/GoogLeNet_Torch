@@ -18,7 +18,7 @@ import torch## undefined
 from torch.backends import cudnn## undefined
 
 # Random seed to maintain reproducible results
-random.seed(0)## undefined
+random.seed(0)## setam seedul pt random la 0
 torch.manual_seed(0)## undefined
 np.random.seed(0)## undefined
 # Use GPU for training by default
