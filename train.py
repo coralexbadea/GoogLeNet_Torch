@@ -11,21 +11,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-import os## undefined
-import time## undefined
+import os## Provides a way to interact with the operating system.
+import time## Provides functions for working with time-related operations.
 
 import torch
 from torch import nn
-from torch import optim## undefined
-from torch.cuda import amp## undefined
-from torch.optim import lr_scheduler## undefined
-from torch.optim.swa_utils import AveragedModel## undefined
-from torch.utils.data import DataLoader## undefined
-from torch.utils.tensorboard import SummaryWriter## undefined
+from torch import optim## Provides optimization algorithms for training models.
+from torch.cuda import amp## Enables mixed precision training using Automatic Mixed Precision 
+from torch.optim import lr_scheduler## Provides learning rate scheduling techniques.
+from torch.optim.swa_utils import AveragedModel## Implements the Stochastic Weight Averaging (SWA) technique for model optimization.
+from torch.utils.data import DataLoader## Provides a DataLoader class for efficient data loading during training.
+from torch.utils.tensorboard import SummaryWriter## Enables writing TensorBoard logs for visualization.
 
-import config## undefined
-from dataset import CUDAPrefetcher, ImageDataset## undefined
-from utils import accuracy, load_state_dict, make_directory, save_checkpoint, Summary, AverageMeter, ProgressMeter## undefined
+import config## A custom module or script that likely contains configuration settings or variables.
+from dataset import CUDAPrefetcher, ImageDataset##  A custom module or script that likely defines the dataset classes or functions.
+from utils import accuracy, load_state_dict, make_directory, save_checkpoint, Summary, AverageMeter, ProgressMeter## A custom module or script that likely contains utility functions or classes.
 import model
 
 model_names = sorted(
@@ -34,36 +34,36 @@ model_names = sorted(
 
 def main():
     # Initialize the number of training epochs
-    start_epoch = 0## undefined
+    start_epoch = 0## starting epoch
 
     # Initialize training network evaluation indicators
-    best_acc1 = 0.0## undefined
+    best_acc1 = 0.0## best accuracy
 
     train_prefetcher, valid_prefetcher = load_dataset()
-    print(f"Load `{config.model_arch_name}` datasets successfully.")## undefined
+    print(f"Load `{config.model_arch_name}` datasets successfully.")## using load function
 
-    googlenet_model, ema_googlenet_model = build_model()## undefined
-    print(f"Build `{config.model_arch_name}` model successfully.")## undefined
+    googlenet_model, ema_googlenet_model = build_model()## Print a success message indicating that the dataset for the specified model architecture (config.model_arch_name) has been loaded successfully
+    print(f"Build `{config.model_arch_name}` model successfully.")## Print a success message indicating that the dataset for the specified model architecture (config.model_arch_name) has been loaded successfully 
 
-    pixel_criterion = define_loss()## undefined
-    print("Define all loss functions successfully.")## undefined
+    pixel_criterion = define_loss()## Define the pixel criterion (loss function) using the define_loss() function
+    print("Define all loss functions successfully.")## Define the pixel criterion (loss function) using the define_loss() function
 
-    optimizer = define_optimizer(googlenet_model)## undefined
+    optimizer = define_optimizer(googlenet_model)## Define the optimizer for the GoogLeNet model using the define_optimizer() function
     print("Define all optimizer functions successfully.")
 
-    scheduler = define_scheduler(optimizer)## undefined
+    scheduler = define_scheduler(optimizer)## Define the scheduler for the optimizer using the define_scheduler() function 
     print("Define all optimizer scheduler functions successfully.")
 
     print("Check whether to load pretrained model weights...")
-    if config.pretrained_model_weights_path:## undefined
-        googlenet_model, ema_googlenet_model, start_epoch, best_acc1, optimizer, scheduler = load_state_dict(## undefined
-            googlenet_model,## undefined
+    if config.pretrained_model_weights_path:## Check if there is a pretrained model weights path specified in the configuration 
+        googlenet_model, ema_googlenet_model, start_epoch, best_acc1, optimizer, scheduler = load_state_dict(## Check if there is a pretrained model weights path specified in the configuration 
+            googlenet_model,## above function
             config.pretrained_model_weights_path,
-            ema_googlenet_model,## undefined
-            start_epoch,## undefined
-            best_acc1,## undefined
-            optimizer,## undefined
-            scheduler)## undefined
+            ema_googlenet_model,## above function
+            start_epoch,## defined above
+            best_acc1,## defined above
+            optimizer,## defined above
+            scheduler)## defined above
         print(f"Loaded `{config.pretrained_model_weights_path}` pretrained model weights successfully.")
     else:
         print("Pretrained model weights not found.")
@@ -84,16 +84,16 @@ def main():
         print("Resume training model not found. Start training from scratch.")
 
     # Create a experiment results
-    samples_dir = os.path.join("samples", config.exp_name)## undefined
-    results_dir = os.path.join("results", config.exp_name)## undefined
-    make_directory(samples_dir)## undefined
-    make_directory(results_dir)## undefined
+    samples_dir = os.path.join("samples", config.exp_name)## sample direction
+    results_dir = os.path.join("results", config.exp_name)## result direction
+    make_directory(samples_dir)## makes a directory
+    make_directory(results_dir)## makes a directory
 
     # Create training process log file
     writer = SummaryWriter(os.path.join("samples", "logs", config.exp_name))## undefined
 
     # Initialize the gradient scaler
-    scaler = amp.GradScaler()## undefined
+    scaler = amp.GradScaler()## gradient scaler
 
     for epoch in range(start_epoch, config.epochs):## undefined
         train(googlenet_model, ema_googlenet_model, train_prefetcher, pixel_criterion, optimizer, epoch, scaler, writer)## undefined
@@ -101,38 +101,38 @@ def main():
         print("\n")
 
         # Update LR
-        scheduler.step()## undefined
+        scheduler.step()## updates the steps
 
         # Automatically save the model with the highest index
-        is_best = acc1 > best_acc1## undefined
-        is_last = (epoch + 1) == config.epochs## undefined
-        best_acc1 = max(acc1, best_acc1)## undefined
-        save_checkpoint({"epoch": epoch + 1,## undefined
-                         "best_acc1": best_acc1,## undefined
-                         "state_dict": googlenet_model.state_dict(),## undefined
-                         "ema_state_dict": ema_googlenet_model.state_dict(),## undefined
-                         "optimizer": optimizer.state_dict(),## undefined
-                         "scheduler": scheduler.state_dict()},## undefined
+        is_best = acc1 > best_acc1## comapre
+        is_last = (epoch + 1) == config.epochs## updates last
+        best_acc1 = max(acc1, best_acc1)## maximeze
+        save_checkpoint({"epoch": epoch + 1,## saves for checkpoints
+                         "best_acc1": best_acc1,## saves for checkpoints
+                         "state_dict": googlenet_model.state_dict(),## saves for checkpoints
+                         "ema_state_dict": ema_googlenet_model.state_dict(),## saves for checkpoints
+                         "optimizer": optimizer.state_dict(),## saves for checkpoints
+                         "scheduler": scheduler.state_dict()},## saves for checkpoints
                         f"epoch_{epoch + 1}.pth.tar",
-                        samples_dir,## undefined
-                        results_dir,## undefined
+                        samples_dir,## defined above
+                        results_dir,## defined above
                         is_best,
                         is_last)
 
 
 def load_dataset() -> [CUDAPrefetcher, CUDAPrefetcher]:
     # Load train, test and valid datasets
-    train_dataset = ImageDataset(config.train_image_dir, config.image_size, "Train")## undefined
-    valid_dataset = ImageDataset(config.valid_image_dir, config.image_size, "Valid")## undefined
+    train_dataset = ImageDataset(config.train_image_dir, config.image_size, "Train")## load train
+    valid_dataset = ImageDataset(config.valid_image_dir, config.image_size, "Valid")## test and validate dataset
 
     # Generator all dataloader
-    train_dataloader = DataLoader(train_dataset,## undefined
-                                  batch_size=config.batch_size,## undefined
-                                  shuffle=True,## undefined
-                                  num_workers=config.num_workers,## undefined
-                                  pin_memory=True,## undefined
-                                  drop_last=True,## undefined
-                                  persistent_workers=True)## undefined
+    train_dataloader = DataLoader(train_dataset,## generate train datasset
+                                  batch_size=config.batch_size,## cnfigure batchsize
+                                  shuffle=True,## makes it true
+                                  num_workers=config.num_workers,## configures nr of workers
+                                  pin_memory=True,## makes it true
+                                  drop_last=True,## makes it true
+                                  persistent_workers=True)## makes it true
     valid_dataloader = DataLoader(valid_dataset,
                                   batch_size=config.batch_size,
                                   shuffle=False,
@@ -148,7 +148,7 @@ def load_dataset() -> [CUDAPrefetcher, CUDAPrefetcher]:
     return train_prefetcher, valid_prefetcher
 
 
-def build_model() -> [nn.Module, nn.Module]## undefined:
+def build_model() -> [nn.Module, nn.Module]## defines function:
     googlenet_model = model.__dict__[config.model_arch_name](num_classes=config.model_num_classes,## undefined
                                                              aux_logits=False,## undefined
                                                              transform_input=True)## undefined
@@ -160,14 +160,14 @@ def build_model() -> [nn.Module, nn.Module]## undefined:
     return googlenet_model, ema_googlenet_model
 
 
-def define_loss() -> nn.CrossEntropyLoss:## undefined
+def define_loss() -> nn.CrossEntropyLoss:## defines function
     criterion = nn.CrossEntropyLoss(label_smoothing=config.loss_label_smoothing)## undefined
     criterion = criterion.to(device=config.device, memory_format=torch.channels_last)## undefined
 
     return criterion
 
 
-def define_optimizer(model) -> optim.SGD:## undefined
+def define_optimizer(model) -> optim.SGD:## defines function
     optimizer = optim.SGD(model.parameters(),## undefined
                           lr=config.model_lr,## undefined
                           momentum=config.model_momentum,## undefined
@@ -185,22 +185,22 @@ def define_scheduler(optimizer: optim.SGD) -> lr_scheduler.CosineAnnealingWarmRe
     return scheduler
 
 
-def train(## undefined
-        model: nn.Module,## undefined
-        ema_model: nn.Module,## undefined
-        train_prefetcher: CUDAPrefetcher,## undefined
-        criterion: nn.CrossEntropyLoss,## undefined
-        optimizer: optim.Adam,## undefined
-        epoch: int,## undefined
-        scaler: amp.GradScaler,## undefined
-        writer: SummaryWriter## undefined
+def train(## defines train
+        model: nn.Module,## neutral network
+        ema_model: nn.Module,## exponential moving avergae
+        train_prefetcher: CUDAPrefetcher,## An instance of the CUDAPrefetcher class for efficiently loading and preprocessing training data (undefined).
+        criterion: nn.CrossEntropyLoss,## The loss function to be used during training, specifically 
+        optimizer: optim.Adam,## The optimizer used for updating the model's parameters, specifically 
+        epoch: int,## The current epoch number during training 
+        scaler: amp.GradScaler,## An instance of the amp.GradScaler class for automatic mixed precision training
+        writer: SummaryWriter## An instance of the SummaryWriter class for logging training progress 
 ) -> None:
     # Calculate how many batches of data are in each Epoch
-    batches = len(train_prefetcher)## undefined
+    batches = len(train_prefetcher)## defines batches
     # Print information of progress bar during training
-    batch_time = AverageMeter("Time", ":6.3f")## undefined
-    data_time = AverageMeter("Data", ":6.3f")## undefined
-    losses = AverageMeter("Loss", ":6.6f")## undefined
+    batch_time = AverageMeter("Time", ":6.3f")## average batch time
+    data_time = AverageMeter("Data", ":6.3f")## average data time
+    losses = AverageMeter("Loss", ":6.6f")## average losses
     acc1 = AverageMeter("Acc@1", ":6.2f")
     acc5 = AverageMeter("Acc@5", ":6.2f")
     progress = ProgressMeter(batches,
@@ -208,17 +208,17 @@ def train(## undefined
                              prefix=f"Epoch: [{epoch + 1}]")
 
     # Put the generative network model in training mode
-    model.train()## undefined
+    model.train()## trainijng mode
 
     # Initialize the number of data batches to print logs on the terminal
-    batch_index = 0## undefined
+    batch_index = 0## initialize nr of data natches
 
     # Initialize the data loader and load the first batch of data
-    train_prefetcher.reset()## undefined
-    batch_data = train_prefetcher.next()## undefined
+    train_prefetcher.reset()## initializes data loader
+    batch_data = train_prefetcher.next()## load the first batch of data
 
     # Get the initialization training time
-    end = time.time()## undefined
+    end = time.time()## training time
 
     while batch_data is not None:
         # Calculate the time it takes to load a batch of data
@@ -232,21 +232,21 @@ def train(## undefined
         batch_size = images.size(0)
 
         # Initialize generator gradients
-        model.zero_grad(set_to_none=True)## undefined
+        model.zero_grad(set_to_none=True)## initiaize generator gradients
 
         # Mixed precision training
         with amp.autocast():
-            output = model(images)## undefined
+            output = model(images)## gets output
             loss_aux3 = config.loss_aux3_weights * criterion(output[0], target)## undefined
             loss_aux2 = config.loss_aux2_weights * criterion(output[1], target)## undefined
             loss_aux1 = config.loss_aux1_weights * criterion(output[2], target)## undefined
             loss = loss_aux3 + loss_aux2 + loss_aux1
 
         # Backpropagation
-        scaler.scale(loss).backward()## undefined
+        scaler.scale(loss).backward()## backpropagation
         # update generator weights
-        scaler.step(optimizer)## undefined
-        scaler.update()## undefined
+        scaler.step(optimizer)## update step
+        scaler.update()## update weight
 
         # Update EMA
         ema_model.update_parameters(model)## undefined
